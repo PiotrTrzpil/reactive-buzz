@@ -14,20 +14,22 @@ import com.reactivebuzz.GitHubGetter.ProjectItem
 object TweetsFetcher {
    case class ProjectTweet(author: String, text: String)
    case class ProjectWithTweets(project: ProjectItem, tweets: List[ProjectTweet])
-   def props(connector:ActorRef) = Props(classOf[TweetsFetcher], connector)
+   def props(controller: ActorRef, connector:ActorRef) = Props(classOf[TweetsFetcher], controller, connector)
 }
-class TweetsFetcher(connector:ActorRef) extends Actor with ActorLogging{
+class TweetsFetcher(controller: ActorRef, connector:ActorRef) extends Actor with ActorLogging{
 
    def searchUrl(query:String) = s"https://api.twitter.com/1.1/search/tweets.json?lang=en&q=$query"
 
    var requests = mutable.Map[String, (ActorRef, ProjectItem)]()
 
+   var confirmationRequired = false
+
    def receive = {
-      case p : ProjectItem =>
+      case proj : ProjectItem =>
          val id = UUID.randomUUID().toString
-         requests += (id -> (sender(), p))
-         log.info(s"Sending request to Twitter for project: ${p.name}")
-         connector ! Request(id, searchUrl(p.name))
+         requests += (id -> (sender(), proj))
+         log.info(s"Sending request to Twitter for project: ${proj.name}")
+         connector ! Request(id, searchUrl(proj.name))
       case Response(id, json) =>
          implicit val formats = org.json4s.DefaultFormats
          val tweets = (json \ "statuses").extract[List[JValue]]
@@ -40,10 +42,10 @@ class TweetsFetcher(connector:ActorRef) extends Actor with ActorLogging{
          log.info(s"Got ${tweets.size} tweets for project: ${project.name}")
          requester ! ProjectWithTweets(project, tweets)
          requests.remove(id)
-
       case Status.Failure(RequestException(id, ex)) =>
          log.error("Request failed", ex)
          requests.remove(id)
+         throw RequestException(id, ex)
 
    }
 }

@@ -2,7 +2,6 @@ package com.reactivebuzz
 
 import akka.actor._
 import java.net.URLEncoder
-import java.util.Base64
 import dispatch.{url, Http, as}
 import com.reactivebuzz.GitHubGetter.Projects
 import org.json4s._
@@ -17,6 +16,7 @@ import com.reactivebuzz.TwitterConnector.RequestException
 import com.reactivebuzz.TwitterConnector.Auth
 import scala.util.Success
 import com.reactivebuzz.TwitterConnector.Request
+import javax.xml.bind.DatatypeConverter
 
 object TwitterConnector {
    val props = Props[TwitterConnector]
@@ -69,7 +69,7 @@ class TwitterConnector extends Actor with ActorLogging{
       val key = context.system.settings.config.getString("twitter.key")
       val secret = context.system.settings.config.getString("twitter.secret")
       val authString = URLEncoder.encode(key, charset) + ':' + URLEncoder.encode(secret, charset)
-      val encoded = Base64.getEncoder.encodeToString(authString.getBytes(charset))
+      val encoded = DatatypeConverter.printBase64Binary(authString.getBytes(charset))
       val svc = url(authUrl).POST
         .addHeader("Authorization", s"Basic $encoded")
         .setContentType("application/x-www-form-urlencoded", "UTF-8")
