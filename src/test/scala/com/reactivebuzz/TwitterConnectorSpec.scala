@@ -21,15 +21,15 @@ class TwitterConnectorSpec(_system: ActorSystem) extends TestKit(_system) with I
     TestKit.shutdownActorSystem(system)
   }
 
-  "A Ping actor" must {
-    "send back a ping on a pong" in {
+  "A TwitterConnector actor" must {
+    "authenticate with Twitter and get some tweets" in {
       implicit val formats = org.json4s.DefaultFormats
       val actor = TestActorRef[TwitterConnector](TwitterConnector.props)
       val token: String = Await.result(actor.underlyingActor.auth(), 10 seconds)
       val result: JValue = Await.result(actor.underlyingActor.request("https://api.twitter.com/1.1/search/tweets.json?q=Akka&lang=en", token), 10 seconds)
       val tweets = (result \ "statuses").extract[List[JValue]]
          .map(a => (a \ "text").extract[String])
-      println(tweets)
+      tweets.size should be > 0
     }
   }
 

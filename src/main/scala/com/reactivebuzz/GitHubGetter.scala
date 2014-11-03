@@ -28,7 +28,7 @@ class GitHubGetter() extends Actor with ActorLogging {
             val json = parse(jsonString)
             implicit val formats =  org.json4s.DefaultFormats
             val items = (json \ "items").extract[List[JValue]].take(numberOfProjects)
-            log.info(s"Got ${items.size}} github projects.")
+            log.info(s"Got ${items.size} github projects.")
             val projects = items.map(item => {
                ProjectItem(
                   (item \ "name").extract[String],

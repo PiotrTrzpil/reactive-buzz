@@ -80,8 +80,6 @@ class TwitterConnector extends Actor with ActorLogging{
         .map(parse(_))
         .map(json => (json \ "token_type", json \ "access_token"))
         .collect{ case (JString("bearer"), JString(token)) => token }
-
-
    }
 
 }

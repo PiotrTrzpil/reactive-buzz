@@ -4,7 +4,12 @@ import akka.actor.{Actor, ActorLogging, Props}
 import com.reactivebuzz.GitHubGetter.{ProjectsError, GetProjects, Projects}
 import com.reactivebuzz.TwitterConnector.{TwitterAuthorized, Auth}
 import com.reactivebuzz.TweetsFetcher.ProjectWithTweets
-
+object ControllerActor {
+   val props = Props[ControllerActor]
+   case object Initialize
+   case class PingMessage(text: String)
+   case object GetTweets
+}
 class ControllerActor extends Actor with ActorLogging {
   import ControllerActor._
   
@@ -57,9 +62,3 @@ class ControllerActor extends Actor with ActorLogging {
    }
 }
 
-object ControllerActor {
-  val props = Props[ControllerActor]
-  case object Initialize
-  case class PingMessage(text: String)
-  case object GetTweets
-}

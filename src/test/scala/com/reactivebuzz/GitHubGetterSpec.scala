@@ -16,11 +16,11 @@ class GitHubGetterSpec(_system: ActorSystem) extends TestKit(_system) with Impli
     TestKit.shutdownActorSystem(system)
   }
  
-  "A Ping actor" must {
-    "send back a ping on a pong" in {
+  "A GitHubGetter actor" must {
+    "receive some projects" in {
       val githubActor = system.actorOf(GitHubGetter.props)
        githubActor ! GetProjects("Reactive")
-      expectMsgClass(classOf[ProjectsError])
+      expectMsgClass(classOf[Projects])
     }
   }
 
